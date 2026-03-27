@@ -1,80 +1,84 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 
-const ActionBar = ({ video, isLiked, onLike }) => {
-  const formatCount = (count) => {
-    if (count >= 1000000) {
-      return (count / 1000000).toFixed(1) + 'M';
-    } else if (count >= 1000) {
-      return (count / 1000).toFixed(1) + 'K';
+const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isBookmarked: initialBookmarked }) => {
+  const [liked, setLiked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(initialBookmarked || false);
+  const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+  const [likesCount, setLikesCount] = useState(video.likes);
+
+  const handleLike = () => {
+    if (!liked) {
+      setLikesCount(prev => prev + 1);
+      setShowHeartAnimation(true);
+      setTimeout(() => setShowHeartAnimation(false), 1000);
+    } else {
+      setLikesCount(prev => prev - 1);
     }
-    return count.toString();
+    setLiked(!liked);
+    onLike && onLike(!liked);
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Check out this video!',
-        text: video.description,
-        url: window.location.href
-      });
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
-    }
+  const handleBookmark = () => {
+    const newState = !bookmarked;
+    setBookmarked(newState);
+    onBookmark && onBookmark(newState);
   };
 
   return (
-    <div className="absolute right-2 sm:right-4 bottom-20 flex flex-col items-center gap-4 sm:gap-6 z-10">
+    <div className="absolute right-4 bottom-24 flex flex-col gap-6 z-10">
       {/* Like Button */}
-      <button
-        onClick={onLike}
-        className="flex flex-col items-center gap-1 transition-all duration-200 active:scale-110 touch-manipulation group"
-      >
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/20 rounded-full blur-md group-hover:scale-110 transition-transform"></div>
-          <Heart 
-            size={28} 
-            className={`relative z-10 transition-all duration-200 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`}
+      <div className="relative flex flex-col items-center">
+        <button
+          onClick={handleLike}
+          className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
+        >
+          <Heart
+            size={28}
+            className={`transition-all ${liked ? 'fill-red-500 text-red-500' : 'text-white'}`}
           />
-        </div>
-        <span className="text-white text-xs font-medium mt-1">
-          {formatCount(isLiked ? video.likes + 1 : video.likes)}
-        </span>
-      </button>
+        </button>
+        <span className="text-white text-xs mt-1 font-medium">{likesCount.toLocaleString()}</span>
+        
+        {/* Heart Animation */}
+        {showHeartAnimation && (
+          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <Heart size={40} className="fill-red-500 text-red-500" />
+          </div>
+        )}
+      </div>
 
       {/* Comment Button */}
-      <button className="flex flex-col items-center gap-1 transition-all duration-200 active:scale-110 touch-manipulation group">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/20 rounded-full blur-md group-hover:scale-110 transition-transform"></div>
-          <MessageCircle size={28} className="relative z-10 text-white" />
-        </div>
-        <span className="text-white text-xs font-medium mt-1">
-          {formatCount(video.comments)}
-        </span>
-      </button>
+      <div className="flex flex-col items-center">
+        <button
+          onClick={onComment}
+          className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
+        >
+          <MessageCircle size={28} className="text-white" />
+        </button>
+        <span className="text-white text-xs mt-1 font-medium">{video.comments.toLocaleString()}</span>
+      </div>
 
       {/* Share Button */}
-      <button 
-        onClick={handleShare}
-        className="flex flex-col items-center gap-1 transition-all duration-200 active:scale-110 touch-manipulation group"
-      >
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/20 rounded-full blur-md group-hover:scale-110 transition-transform"></div>
-          <Share2 size={28} className="relative z-10 text-white" />
-        </div>
-        <span className="text-white text-xs font-medium mt-1">
-          {formatCount(video.shares)}
-        </span>
-      </button>
+      <div className="flex flex-col items-center">
+        <button
+          onClick={onShare}
+          className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
+        >
+          <Share2 size={28} className="text-white" />
+        </button>
+        <span className="text-white text-xs mt-1 font-medium">{video.shares.toLocaleString()}</span>
+      </div>
 
       {/* Bookmark Button */}
-      <button className="flex flex-col items-center gap-1 transition-all duration-200 active:scale-110 touch-manipulation group">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/20 rounded-full blur-md group-hover:scale-110 transition-transform"></div>
-          <Bookmark size={28} className="relative z-10 text-white" />
-        </div>
+      <button
+        onClick={handleBookmark}
+        className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
+      >
+        <Bookmark
+          size={28}
+          className={`transition-all ${bookmarked ? 'fill-yellow-500 text-yellow-500' : 'text-white'}`}
+        />
       </button>
     </div>
   );

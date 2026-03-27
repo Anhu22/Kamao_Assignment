@@ -1,82 +1,85 @@
 import React, { useState } from 'react';
-import { User, Plus, Music2 } from 'lucide-react';
+import { Music, ChevronDown, ChevronUp } from 'lucide-react';
 
-const UserInfo = ({ video, onAction }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const UserInfo = ({ video, onFollow }) => {
+  const [expanded, setExpanded] = useState(false);
   const [isFollowing, setIsFollowing] = useState(video.user.isFollowing);
+  const description = video.description;
+  const shouldTruncate = description.length > 60;
+  const truncatedDesc = shouldTruncate
+    ? description.substring(0, 60) + '...'
+    : description;
 
   const handleFollow = () => {
-    const newFollowingState = !isFollowing;
-    setIsFollowing(newFollowingState);
-    onAction(video.id, 'follow', { isFollowing: newFollowingState });
-  };
-
-  const toggleDescription = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const truncateText = (text, maxLines = 2) => {
-    const lines = text.split('\n');
-    if (lines.length <= maxLines) return text;
-    
-    const truncated = lines.slice(0, maxLines).join('\n');
-    return truncated + '...';
+    const newState = !isFollowing;
+    setIsFollowing(newState);
+    onFollow && onFollow(newState);
   };
 
   return (
-    <div className="absolute bottom-4 left-3 sm:left-4 right-16 sm:right-20 z-10">
-      <div className="flex items-center gap-2 sm:gap-3 mb-3">
-        {/* User Avatar */}
-        <div className="relative">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full opacity-75"></div>
-          <img 
-            src={video.user.avatar} 
-            alt={video.user.name}
-            className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white"
-          />
-          <button
-            onClick={handleFollow}
-            className={`absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-xs font-bold touch-manipulation transition-all duration-200 ${
-              isFollowing 
-                ? 'bg-gray-600 text-white hover:bg-gray-700' 
-                : 'bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:from-pink-600 hover:to-purple-600'
-            }`}
-          >
-            {isFollowing ? '✓' : <Plus size={10} />}
-          </button>
+    <div className="absolute bottom-0 left-0 right-0 z-10">
+      {/* Main Container - Placed directly above progress bar with minimal gap */}
+      <div className="px-6 pb-5">
+        {/* Combined User Info Card */}
+        <div className="flex items-start gap-3">
+          {/* Avatar - Option 3 style with online indicator */}
+          <div className="relative flex-shrink-0">
+            <img
+              src={video.user.avatar}
+              alt={video.user.name}
+              className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-lg"
+            />
+            {/* Online indicator */}
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+          </div>
+          
+          {/* Info Container */}
+          <div className="flex-1 min-w-0">
+            {/* Name and Follow Button - Option 2 style */}
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-white font-semibold text-sm">@{video.user.name}</span>
+              <button
+                onClick={handleFollow}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold transition-all ${
+                  isFollowing
+                    ? 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
+                    : 'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:shadow-lg'
+                }`}
+              >
+                {isFollowing ? 'Following' : 'Follow'}
+              </button>
+            </div>
+            
+            {/* Description - Option 5 style with expand/collapse */}
+            <p className="text-white/80 text-xs leading-relaxed mb-1">
+              {expanded ? description : truncatedDesc}
+              {shouldTruncate && (
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="ml-1 text-gray-400 hover:text-white inline-flex items-center transition-colors"
+                >
+                  {expanded ? (
+                    <ChevronUp size={12} />
+                  ) : (
+                    <ChevronDown size={12} />
+                  )}
+                </button>
+              )}
+            </p>
+            
+            {/* Music with Visualizer - Option 4 style */}
+            <div className="flex items-center gap-2">
+              {/* Animated visualizer bars */}
+              <div className="flex items-center gap-0.5">
+                <div className="w-1 h-1 bg-pink-400 rounded-full animate-pulse"></div>
+                <div className="w-1 h-2 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-1 h-3 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+              </div>
+              <Music size={12} className="text-pink-400" />
+              <span className="text-white/70 text-xs truncate flex-1">{video.music}</span>
+            </div>
+          </div>
         </div>
-
-        {/* Username */}
-        <div>
-          <p className="text-white font-semibold text-xs sm:text-sm drop-shadow-lg">
-            @{video.user.name}
-          </p>
-        </div>
-      </div>
-
-      {/* Video Description */}
-      <div className="text-white text-xs sm:text-sm">
-        <p className="whitespace-pre-wrap drop-shadow-lg">
-          {isExpanded ? video.description : truncateText(video.description)}
-        </p>
-        {video.description.split('\n').length > 2 && (
-          <button 
-            onClick={toggleDescription}
-            className="text-gray-300 font-semibold mt-1 hover:text-white transition-colors touch-manipulation text-xs"
-          >
-            {isExpanded ? 'less' : 'more'}
-          </button>
-        )}
-      </div>
-
-      {/* Music Info */}
-      <div className="flex items-center gap-2 mt-2">
-        <div className="w-3 h-3 sm:w-4 sm:h-4 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full animate-spin-slow flex items-center justify-center">
-          <Music2 size={8} className="text-white" />
-        </div>
-        <p className="text-white text-xs opacity-90 drop-shadow-lg">
-          {video.music}
-        </p>
       </div>
     </div>
   );
