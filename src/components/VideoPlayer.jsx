@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 
-const VideoPlayer = ({ video, isActive, onPlay, onPause }) => {
+const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -11,6 +11,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause }) => {
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
+  const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   let controlsTimeout;
   let longPressTimer;
 
@@ -209,14 +210,28 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause }) => {
     togglePlay();
   }, [togglePlay]);
 
+  // FIXED: Double tap triggers like, pauses video, and shows heart animation only
   const handleDoubleTap = useCallback((e) => {
     e.stopPropagation();
-    const customEvent = new CustomEvent('doubleTapLike', { 
-      detail: { videoId: video.id } 
-    });
-    window.dispatchEvent(customEvent);
-    showControlsTemporarily();
-  }, [video.id]);
+    
+    // Show heart animation on double tap
+    setShowHeartAnimation(true);
+    setTimeout(() => setShowHeartAnimation(false), 1000);
+    
+    // Call the onLike callback to update like count
+    onLike && onLike(true);
+    
+    // Pause the video if it's playing
+    if (isPlaying) {
+      const video = videoRef.current;
+      if (video) {
+        video.pause();
+        setIsPlaying(false);
+      }
+    }
+    
+    // Don't show controls overlay on double-tap - only heart animation
+  }, [onLike, isPlaying]);
 
   const handleMouseDown = useCallback(() => {
     longPressTimer = setTimeout(() => {
@@ -264,6 +279,21 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause }) => {
         preload="auto"
         data-id={video.id}
       />
+      
+      {/* Heart Animation for Double Tap */}
+      {showHeartAnimation && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+          <div className="animate-heartPop">
+            <svg
+              className="w-32 h-32 text-red-500 drop-shadow-2xl"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          </div>
+        </div>
+      )}
       
       {/* Loading Skeleton with Shimmer Animation */}
       {isLoading && (

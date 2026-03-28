@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 
-const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isBookmarked: initialBookmarked }) => {
-  const [liked, setLiked] = useState(false);
+const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isBookmarked: initialBookmarked, isLiked: initialLiked }) => {
+  const [liked, setLiked] = useState(initialLiked || false);
   const [bookmarked, setBookmarked] = useState(initialBookmarked || false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [likesCount, setLikesCount] = useState(video.likes);
+
+  // Sync liked state with prop changes
+  useEffect(() => {
+    setLiked(initialLiked || false);
+  }, [initialLiked]);
 
   const handleLike = () => {
     if (!liked) {

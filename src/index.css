@@ -37,3 +37,27 @@ html, body, #root {
 .animate-bounce {
   animation: bounce 0.5s ease-in-out;
 }
+
+/* Heart Pop Animation for Double Tap */
+@keyframes heartPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  30% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+.animate-heartPop {
+  animation: heartPop 0.6s ease-out forwards;
+}

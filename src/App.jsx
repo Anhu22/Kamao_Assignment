@@ -160,8 +160,8 @@ const videos = [
 function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeVideoId, setActiveVideoId] = useState(videos[0]?.id);
-  const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
   const [likesStates, setLikesStates] = useState({});
+  const [likedStates, setLikedStates] = useState({});
   const [bookmarkStates, setBookmarkStates] = useState({});
   const [followStates, setFollowStates] = useState({});
   const [isScrolling, setIsScrolling] = useState(false);
@@ -171,14 +171,17 @@ function App() {
   // Initialize states
   useEffect(() => {
     const initialLikes = {};
+    const initialLiked = {};
     const initialBookmarks = {};
     const initialFollow = {};
     videos.forEach(video => {
       initialLikes[video.id] = video.likes;
+      initialLiked[video.id] = false;
       initialBookmarks[video.id] = false;
       initialFollow[video.id] = video.user.isFollowing;
     });
     setLikesStates(initialLikes);
+    setLikedStates(initialLiked);
     setBookmarkStates(initialBookmarks);
     setFollowStates(initialFollow);
   }, []);
@@ -277,27 +280,14 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [currentIndex, activeVideoId, videos.length]);
 
-  // Double tap like handler
-  useEffect(() => {
-    const handleDoubleTapLike = (e) => {
-      setShowDoubleTapHeart(true);
-      setTimeout(() => setShowDoubleTapHeart(false), 1000);
-      
-      // Update likes count
-      setLikesStates(prev => ({
-        ...prev,
-        [e.detail.videoId]: (prev[e.detail.videoId] || 0) + 1
-      }));
-    };
-
-    window.addEventListener('doubleTapLike', handleDoubleTapLike);
-    return () => window.removeEventListener('doubleTapLike', handleDoubleTapLike);
-  }, []);
-
   const handleLike = (videoId, isLiked) => {
     setLikesStates(prev => ({
       ...prev,
       [videoId]: isLiked ? (prev[videoId] + 1) : (prev[videoId] - 1)
+    }));
+    setLikedStates(prev => ({
+      ...prev,
+      [videoId]: isLiked
     }));
   };
 
@@ -317,21 +307,6 @@ function App() {
 
   return (
     <div className="relative h-screen bg-black overflow-hidden">
-      {/* Double Tap Heart Animation */}
-      {showDoubleTapHeart && (
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
-          <div className="animate-bounce">
-            <svg
-              className="w-24 h-24 text-red-500"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          </div>
-        </div>
-      )}
-
       {/* Scroll Container */}
       <div
         ref={scrollContainerRef}
@@ -354,6 +329,7 @@ function App() {
               isActive={index === currentIndex}
               onPlay={() => console.log(`Video ${video.id} playing`)}
               onPause={() => console.log(`Video ${video.id} paused`)}
+              onLike={(liked) => handleLike(video.id, liked)}
             />
             
             <ActionBar
@@ -369,6 +345,7 @@ function App() {
               onShare={() => console.log('Share clicked')}
               onBookmark={(bookmarked) => handleBookmark(video.id, bookmarked)}
               isBookmarked={bookmarkStates[video.id] || false}
+              isLiked={likedStates[video.id] || false}
             />
             
             <UserInfo
