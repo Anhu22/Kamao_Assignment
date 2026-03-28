@@ -222,30 +222,6 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
     togglePlay(); // Toggle play/pause
   }, [togglePlay, isDoubleTap, isLongPress]);
 
-  // Double tap ONLY triggers like animation
-  const handleDoubleTap = useCallback((e) => {
-    e.stopPropagation();
-    
-    // Set flag to prevent play/pause overlay
-    setIsDoubleTap(true);
-    setTimeout(() => setIsDoubleTap(false), 300);
-    
-    // Show heart animation on double tap
-    setShowHeartAnimation(true);
-    setTimeout(() => setShowHeartAnimation(false), 1000);
-    
-    // Only update like count if heart is not already red (not already liked)
-    if (!isLiked) {
-      onLike && onLike(true);
-    }
-    
-    // Clear any pending overlay timeout
-    if (overlayTimeout) {
-      clearTimeout(overlayTimeout);
-      setShowOverlay(false);
-    }
-  }, [onLike, isLiked]);
-
   const handleMouseDown = useCallback((e) => {
     e.preventDefault();
     setIsLongPress(false);
@@ -262,9 +238,9 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
   }, [isPlaying]);
 
   const handleMouseUp = useCallback(() => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
     
     if (isLongPress) {
@@ -279,10 +255,11 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
 
   // Mobile touch handlers for double-tap detection
   const handleTouchStart = useCallback((e) => {
+    console.log('Touch start detected:', e.touches.length, 'touches');
     setIsLongPress(false);
     setWasPlayingBeforePress(isPlaying);
     
-    longPressTimer = setTimeout(() => {
+    longPressTimer.current = setTimeout(() => {
       setIsLongPress(true);
       if (isPlaying) {
         videoRef.current?.pause();
@@ -293,9 +270,11 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
   }, [isPlaying]);
 
   const handleTouchEnd = useCallback((e) => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
+    console.log('Touch end detected:', e.touches.length, 'changedTouches', e.changedTouches);
+    
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
     
     if (isLongPress) {
@@ -311,13 +290,22 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastTapTime.current;
     
+    console.log('Touch end detected:', {
+      currentTime,
+      lastTapTime: lastTapTime.current,
+      timeSinceLastTap,
+      isLongPress
+    });
+    
     // Check if this is a double tap (within 300ms)
     if (timeSinceLastTap < 300) {
       // Double tap detected
+      console.log('Double tap detected!');
       e.preventDefault();
       handleDoubleTap(e);
     } else if (timeSinceLastTap > 300) {
       // Single tap detected
+      console.log('Single tap detected');
       handleTap();
     }
     
@@ -326,7 +314,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
 
   return (
     <div 
-      className="relative w-full h-full bg-black cursor-pointer video-container"
+      className="relative w-full h-full bg-black cursor-pointer video-container overflow-hidden"
       onClick={handleTap}
       onDoubleClick={handleDoubleTap}
       onMouseDown={handleMouseDown}
@@ -337,12 +325,18 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
       <video
         ref={videoRef}
         src={video.url}
-        className={`w-full h-full object-cover ${darkMode ? 'brightness-75' : 'brightness-100'}`}
+        className={`absolute inset-0 w-full h-full object-cover ${darkMode ? 'brightness-75' : 'brightness-100'}`}
         loop={false}
         muted={isMuted}
         playsInline
         preload="auto"
         data-id={video.id}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center'
+        }}
       />
       
       {/* Heart Animation for Double Tap */}
@@ -479,6 +473,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
         </div>
       </div>
     </div>
+  
   );
 };
 

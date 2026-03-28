@@ -89,7 +89,7 @@ const UserInfo = ({ video, onFollow, darkMode }) => {
             </div>
           </div>
         </div>
-        </div> {/* Closing transparent container */}
+        </div>
       </div>
     </div>
   );
