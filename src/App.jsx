@@ -170,6 +170,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsPosition, setSettingsPosition] = useState({ top: 80, left: 20 });
+  const [isKeyboardNavigation, setIsKeyboardNavigation] = useState(false);
   const scrollContainerRef = useRef(null);
   const scrollTimeoutRef = useRef(null);
 
@@ -230,11 +231,17 @@ function App() {
     const videoHeight = window.innerHeight;
     const newIndex = Math.round(scrollTop / videoHeight);
     
-    if (newIndex !== currentIndex && newIndex >= 0 && newIndex < videos.length) {
+    // Only update state if this is not from keyboard navigation
+    if (!isKeyboardNavigation && newIndex !== currentIndex && newIndex >= 0 && newIndex < videos.length) {
       setCurrentIndex(newIndex);
       setActiveVideoId(videos[newIndex].id);
     }
-  }, [currentIndex]);
+    
+    // Reset keyboard navigation flag after scroll completes
+    if (isKeyboardNavigation) {
+      setTimeout(() => setIsKeyboardNavigation(false), 1000);
+    }
+  }, [currentIndex, isKeyboardNavigation]);
 
   // Seamless looping
   useEffect(() => {
@@ -273,16 +280,36 @@ function App() {
       const container = scrollContainerRef.current;
       if (!container) return;
 
+      console.log('Key pressed:', e.key, 'currentIndex:', currentIndex, 'videos.length:', videos.length);
+
       switch(e.key) {
         case 'ArrowUp':
           e.preventDefault();
-          const newIndexUp = Math.max(0, currentIndex - 1);
-          container.scrollTo({ top: newIndexUp * window.innerHeight, behavior: 'smooth' });
+          console.log('ArrowUp pressed, currentIndex:', currentIndex);
+          if (currentIndex > 0) {
+            const newIndexUp = currentIndex - 1;
+            console.log('Moving up to index:', newIndexUp);
+            setIsKeyboardNavigation(true);
+            setCurrentIndex(newIndexUp);
+            setActiveVideoId(videos[newIndexUp].id);
+            container.scrollTo({ top: newIndexUp * window.innerHeight, behavior: 'smooth' });
+          } else {
+            console.log('Already at first video, cannot move up');
+          }
           break;
         case 'ArrowDown':
           e.preventDefault();
-          const newIndexDown = Math.min(videos.length - 1, currentIndex + 1);
-          container.scrollTo({ top: newIndexDown * window.innerHeight, behavior: 'smooth' });
+          console.log('ArrowDown pressed, currentIndex:', currentIndex);
+          if (currentIndex < videos.length - 1) {
+            const newIndexDown = currentIndex + 1;
+            console.log('Moving down to index:', newIndexDown);
+            setIsKeyboardNavigation(true);
+            setCurrentIndex(newIndexDown);
+            setActiveVideoId(videos[newIndexDown].id);
+            container.scrollTo({ top: newIndexDown * window.innerHeight, behavior: 'smooth' });
+          } else {
+            console.log('Already at last video, cannot move down');
+          }
           break;
         case ' ':
         case 'Space':

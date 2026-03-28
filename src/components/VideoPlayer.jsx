@@ -14,9 +14,11 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [hasResetForThisSession, setHasResetForThisSession] = useState(false);
   const [isDoubleTap, setIsDoubleTap] = useState(false);
+  const [isLongPress, setIsLongPress] = useState(false);
+  const [wasPlayingBeforePress, setWasPlayingBeforePress] = useState(false);
   const lastTapTime = useRef(0);
+  const longPressTimer = useRef(null);
   let overlayTimeout;
-  let longPressTimer;
 
   // Handle video activation/deactivation - RESTART FROM BEGINNING
   useEffect(() => {
@@ -222,14 +224,14 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
   }, [isMuted]);
 
   const handleTap = useCallback(() => {
-    // Don't show overlay if it was a double tap
-    if (isDoubleTap) {
+    // Don't show overlay if it was a double tap or long press
+    if (isDoubleTap || isLongPress) {
       setIsDoubleTap(false);
       return;
     }
     showOverlayTemporarily(); // Show overlay for 1 second
     togglePlay(); // Toggle play/pause
-  }, [togglePlay, isDoubleTap]);
+  }, [togglePlay, isDoubleTap, isLongPress]);
 
   // Double tap ONLY triggers like animation
   const handleDoubleTap = useCallback((e) => {
@@ -255,14 +257,19 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
     }
   }, [onLike, isLiked]);
 
-  const handleMouseDown = useCallback(() => {
+  const handleMouseDown = useCallback((e) => {
+    e.preventDefault();
+    setIsLongPress(false);
+    setWasPlayingBeforePress(isPlaying);
+    
     longPressTimer = setTimeout(() => {
+      setIsLongPress(true);
       if (isPlaying) {
         videoRef.current?.pause();
         setIsPlaying(false);
         showOverlayTemporarily();
       }
-    }, 500);
+    }, 500); // 500ms for long press
   }, [isPlaying]);
 
   const handleMouseUp = useCallback(() => {
@@ -270,40 +277,63 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
       clearTimeout(longPressTimer);
       longPressTimer = null;
     }
-  }, []);
+    
+    if (isLongPress) {
+      // Release after long press - resume if it was playing before
+      if (wasPlayingBeforePress) {
+        videoRef.current?.play();
+        setIsPlaying(true);
+      }
+      setIsLongPress(false);
+    }
+  }, [isLongPress, wasPlayingBeforePress]);
 
   // Mobile touch handlers for double-tap detection
   const handleTouchStart = useCallback((e) => {
+    setIsLongPress(false);
+    setWasPlayingBeforePress(isPlaying);
+    
     longPressTimer = setTimeout(() => {
+      setIsLongPress(true);
       if (isPlaying) {
         videoRef.current?.pause();
         setIsPlaying(false);
         showOverlayTemporarily();
       }
-    }, 500);
+    }, 500); // 500ms for long press
   }, [isPlaying]);
 
   const handleTouchEnd = useCallback((e) => {
     if (longPressTimer) {
       clearTimeout(longPressTimer);
       longPressTimer = null;
-      
-      const currentTime = Date.now();
-      const timeSinceLastTap = currentTime - lastTapTime.current;
-      
-      // Check if this is a double tap (within 300ms)
-      if (timeSinceLastTap < 300) {
-        // Double tap detected
-        e.preventDefault();
-        handleDoubleTap(e);
-      } else if (timeSinceLastTap > 300) {
-        // Single tap detected
-        handleTap();
-      }
-      
-      lastTapTime.current = currentTime;
     }
-  }, [handleTap, handleDoubleTap]);
+    
+    if (isLongPress) {
+      // Release after long press - resume if it was playing before
+      if (wasPlayingBeforePress) {
+        videoRef.current?.play();
+        setIsPlaying(true);
+      }
+      setIsLongPress(false);
+      return; // Don't process tap/double-tap if it was a long press
+    }
+    
+    const currentTime = Date.now();
+    const timeSinceLastTap = currentTime - lastTapTime.current;
+    
+    // Check if this is a double tap (within 300ms)
+    if (timeSinceLastTap < 300) {
+      // Double tap detected
+      e.preventDefault();
+      handleDoubleTap(e);
+    } else if (timeSinceLastTap > 300) {
+      // Single tap detected
+      handleTap();
+    }
+    
+    lastTapTime.current = currentTime;
+  }, [isLongPress, wasPlayingBeforePress, handleTap, handleDoubleTap]);
 
   return (
     <div 
