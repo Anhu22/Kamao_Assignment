@@ -10,16 +10,23 @@ const UserInfo = ({ video, onFollow }) => {
     ? description.substring(0, 60) + '...'
     : description;
 
-  const handleFollow = () => {
+  const handleFollow = (e) => {
+    e.stopPropagation(); // Prevent event from bubbling to video player
+    
     const newState = !isFollowing;
     setIsFollowing(newState);
     onFollow && onFollow(newState);
   };
 
+  const handleExpandToggle = (e) => {
+    e.stopPropagation(); // Prevent event from bubbling to video player
+    setExpanded(!expanded);
+  };
+
   return (
     <div className="absolute bottom-0 left-0 right-0 z-10">
       {/* Main Container - Placed directly above progress bar with minimal gap */}
-      <div className="px-6 pb-5">
+      <div className="px-4 pb-2">
         {/* Combined User Info Card */}
         <div className="flex items-start gap-3">
           {/* Avatar - Option 3 style with online indicator */}
@@ -55,7 +62,7 @@ const UserInfo = ({ video, onFollow }) => {
               {expanded ? description : truncatedDesc}
               {shouldTruncate && (
                 <button
-                  onClick={() => setExpanded(!expanded)}
+                  onClick={handleExpandToggle}
                   className="ml-1 text-gray-400 hover:text-white inline-flex items-center transition-colors"
                 >
                   {expanded ? (

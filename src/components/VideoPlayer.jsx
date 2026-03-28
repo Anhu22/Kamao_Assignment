@@ -12,10 +12,11 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
   const [buffered, setBuffered] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+  const [hasResetForThisSession, setHasResetForThisSession] = useState(false);
   let controlsTimeout;
   let longPressTimer;
 
-  // Handle video activation/deactivation - RESTART FROM BEGINNING
+  // Handle video activation/deactivation - RESET ONLY ON ACTUAL VIDEO CHANGE
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -23,10 +24,11 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
     const playVideo = async () => {
       try {
         if (isActive) {
-          // Reset video to beginning when it becomes active
-          if (video.currentTime !== 0) {
+          // Only reset video when it becomes active AND it's a new video session
+          if (!hasResetForThisSession && video.currentTime !== 0) {
             video.currentTime = 0;
             setProgress(0);
+            setHasResetForThisSession(true);
           }
           
           setIsLoading(true);
@@ -50,6 +52,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
             video.addEventListener('canplay', canPlayHandler);
           }
         } else {
+          // When video becomes inactive, pause but DON'T reset the currentTime
           if (!video.paused) {
             video.pause();
             setIsPlaying(false);
@@ -69,7 +72,12 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
         video.pause();
       }
     };
-  }, [isActive, onPlay, onPause]);
+  }, [isActive, onPlay, onPause, hasResetForThisSession]);
+
+  // Reset the reset flag when video ID changes (new video)
+  useEffect(() => {
+    setHasResetForThisSession(false);
+  }, [video.id]);
 
   // Update progress and buffer
   useEffect(() => {
@@ -95,8 +103,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
       setDuration(video.duration);
       setIsLoading(false);
       
-      if (isActive) {
-        video.currentTime = 0;
+      if (isActive && video.paused) {
         video.play().catch(e => console.log('Play after load failed:', e));
       }
     };
@@ -104,7 +111,6 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
     const handleCanPlay = () => {
       setIsLoading(false);
       if (isActive && video.paused) {
-        video.currentTime = 0;
         video.play().catch(e => console.log('CanPlay play failed:', e));
       }
     };
@@ -149,6 +155,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
 
   // Seek functionality
   const handleSeek = useCallback((e) => {
+    e.stopPropagation(); // Prevent event from bubbling
     const video = videoRef.current;
     if (!video || !duration) return;
 
@@ -189,12 +196,23 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
     showControlsTemporarily();
   }, [isPlaying]);
 
-  const toggleMute = useCallback(() => {
+  // FIXED: Mute toggle that does NOT affect playback
+  const toggleMute = useCallback((e) => {
+    if (e) {
+      e.stopPropagation(); // Stop event from bubbling
+      e.preventDefault();   // Prevent any default behavior
+    }
+    
     const video = videoRef.current;
     if (!video) return;
 
-    video.muted = !isMuted;
-    setIsMuted(!isMuted);
+    // Toggle mute state
+    const newMutedState = !isMuted;
+    video.muted = newMutedState;
+    setIsMuted(newMutedState);
+    
+    // IMPORTANT: Do NOT affect play state - video continues playing
+    // No pause, no play toggle, just mute/unmute
   }, [isMuted]);
 
   const showControlsTemporarily = () => {
@@ -210,7 +228,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
     togglePlay();
   }, [togglePlay]);
 
-  // FIXED: Double tap triggers like, pauses video, and shows heart animation only
+  // Double tap ONLY triggers like animation - NO pause, NO reset
   const handleDoubleTap = useCallback((e) => {
     e.stopPropagation();
     
@@ -221,17 +239,8 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
     // Call the onLike callback to update like count
     onLike && onLike(true);
     
-    // Pause the video if it's playing
-    if (isPlaying) {
-      const video = videoRef.current;
-      if (video) {
-        video.pause();
-        setIsPlaying(false);
-      }
-    }
-    
-    // Don't show controls overlay on double-tap - only heart animation
-  }, [onLike, isPlaying]);
+    // Video continues playing - NO interruption
+  }, [onLike]);
 
   const handleMouseDown = useCallback(() => {
     longPressTimer = setTimeout(() => {
@@ -247,15 +256,6 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
     if (longPressTimer) {
       clearTimeout(longPressTimer);
       longPressTimer = null;
-    }
-  }, []);
-
-  // Reset video on mount
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      video.currentTime = 0;
-      setProgress(0);
     }
   }, []);
 
@@ -329,12 +329,13 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike }) => {
         </div>
       )}
       
-      {/* Mute Button with Animation */}
+      {/* Mute Button - FIXED: Does not affect playback */}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleMute();
-        }}
+        onClick={toggleMute}
+        onMouseDown={(e) => e.stopPropagation()} // Prevent long press detection
+        onMouseUp={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
         className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm p-2.5 rounded-full z-20 hover:bg-black/70 transition-all hover:scale-110 active:scale-95"
       >
         {isMuted ? (

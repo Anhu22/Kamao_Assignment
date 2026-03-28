@@ -1,18 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 
-const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isBookmarked: initialBookmarked, isLiked: initialLiked }) => {
-  const [liked, setLiked] = useState(initialLiked || false);
+const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isBookmarked: initialBookmarked }) => {
+  const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(initialBookmarked || false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [likesCount, setLikesCount] = useState(video.likes);
 
-  // Sync liked state with prop changes
-  useEffect(() => {
-    setLiked(initialLiked || false);
-  }, [initialLiked]);
-
-  const handleLike = () => {
+  const handleLike = (e) => {
+    e.stopPropagation(); // Prevent event from bubbling to video player
+    
     if (!liked) {
       setLikesCount(prev => prev + 1);
       setShowHeartAnimation(true);
@@ -24,14 +21,26 @@ const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isB
     onLike && onLike(!liked);
   };
 
-  const handleBookmark = () => {
+  const handleBookmark = (e) => {
+    e.stopPropagation(); // Prevent event from bubbling to video player
+    
     const newState = !bookmarked;
     setBookmarked(newState);
     onBookmark && onBookmark(newState);
   };
 
+  const handleComment = (e) => {
+    e.stopPropagation(); // Prevent event from bubbling to video player
+    onComment && onComment();
+  };
+
+  const handleShare = (e) => {
+    e.stopPropagation(); // Prevent event from bubbling to video player
+    onShare && onShare();
+  };
+
   return (
-    <div className="absolute right-4 bottom-24 flex flex-col gap-6 z-10">
+    <div className="absolute right-4 bottom-32 flex flex-col gap-6 z-10">
       {/* Like Button */}
       <div className="relative flex flex-col items-center">
         <button
@@ -56,7 +65,7 @@ const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isB
       {/* Comment Button */}
       <div className="flex flex-col items-center">
         <button
-          onClick={onComment}
+          onClick={handleComment}
           className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
         >
           <MessageCircle size={28} className="text-white" />
@@ -67,7 +76,7 @@ const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isB
       {/* Share Button */}
       <div className="flex flex-col items-center">
         <button
-          onClick={onShare}
+          onClick={handleShare}
           className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
         >
           <Share2 size={28} className="text-white" />
