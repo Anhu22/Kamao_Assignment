@@ -93,6 +93,22 @@ html, body, #root {
   }
 }
 
+/* Loading Progress Animation */
+@keyframes loadingProgress {
+  0% {
+    width: 0%;
+    opacity: 0.3;
+  }
+  50% {
+    width: 60%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0.3;
+  }
+}
+
 /* Mobile touch optimization */
 .video-container {
   touch-action: manipulation;

@@ -341,55 +341,57 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked }) => {
         </div>
       )}
       
-      {/* Loading Skeleton */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800">
-          <div className="absolute inset-0 shimmer" 
-            style={{
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
-              animation: 'shimmer 1.5s infinite'
-            }}
-          />
-        </div>
-      )}
-      
-      {/* Video Loading Skeleton - Appears when video is not loaded */}
+      {/* Enhanced Video Loading Skeleton - Shows shimmer/placeholder while video buffers */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center">
             {/* Video Frame Skeleton */}
-            <div className="absolute inset-4 bg-gray-800 rounded-lg overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-900">
-                {/* Shimmer Effect */}
+            <div className="absolute inset-4 bg-gray-900/90 rounded-xl overflow-hidden backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black">
+                {/* Enhanced Shimmer Effect */}
                 <div className="absolute inset-0 shimmer" 
                   style={{
-                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)',
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
                     animation: 'shimmer 2s infinite'
                   }}
                 />
                 
-                {/* Play Button Placeholder */}
+                {/* Traditional Loading Buffer Circle */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center animate-pulse">
-                    <div className="w-0 h-0 border-l-[20px] border-l-gray-400 border-y-[12px] border-y-transparent ml-1"></div>
+                  <div className="relative">
+                    {/* Outer spinning ring */}
+                    <div className="w-16 h-16 border-3 border-gray-600/30 border-t-white/60 rounded-full animate-spin"></div>
+                    
+                    {/* Inner spinning ring (counter-rotation) */}
+                    <div className="absolute inset-2 w-12 h-12 border-2 border-gray-600/20 border-b-blue-500/60 rounded-full animate-spin" 
+                      style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                    
+                    {/* Center dot */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white/80 rounded-full animate-pulse"></div>
+                    </div>
                   </div>
                 </div>
                 
                 {/* Loading Progress Bar */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
-                  <div className="h-full w-1/3 bg-blue-500 rounded animate-pulse"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-2 bg-gray-800/80">
+                  <div className="h-full w-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"
+                    style={{
+                      animation: 'loadingProgress 2s ease-in-out infinite'
+                    }}
+                  ></div>
                 </div>
                 
-                {/* Corner Elements */}
-                <div className="absolute top-2 left-2 w-8 h-8 bg-gray-600 rounded animate-pulse"></div>
-                <div className="absolute top-2 right-2 w-8 h-8 bg-gray-600 rounded animate-pulse"></div>
-                <div className="absolute bottom-2 left-2 w-16 h-4 bg-gray-600 rounded animate-pulse"></div>
+                {/* Corner UI Elements */}
+                <div className="absolute top-3 left-3 w-10 h-10 bg-gray-700/40 rounded-lg animate-pulse"></div>
+                <div className="absolute top-3 right-3 w-10 h-10 bg-gray-700/40 rounded-lg animate-pulse"></div>
+                <div className="absolute bottom-6 left-3 w-20 h-3 bg-gray-700/40 rounded-full animate-pulse"></div>
               </div>
             </div>
             
             {/* Loading Text */}
-            <div className="absolute bottom-8 left-0 right-0 text-center">
-              <div className="text-white/60 text-sm animate-pulse">Loading video...</div>
+            <div className="absolute bottom-12 left-0 right-0 text-center">
+              <div className="text-white/50 text-sm font-medium animate-pulse">Buffering video...</div>
             </div>
           </div>
         </div>
