@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Music } from 'lucide-react';
 
-const MusicDisc = ({ isPlaying, coverImage }) => {
+const MusicDisc = ({ isPlaying, coverImage, darkMode }) => {
   const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const MusicDisc = ({ isPlaying, coverImage }) => {
     <div className="absolute bottom-6 right-6 z-10 group">
       <div className="relative">
         {/* Glow effect */}
-        <div className="absolute inset-0 rounded-full bg-purple-500/50 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div className={`absolute inset-0 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity ${darkMode ? 'bg-purple-400/60' : 'bg-purple-500/50'}`}></div>
         
         {/* Main disc */}
         <div

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Music, ChevronDown, ChevronUp } from 'lucide-react';
 
-const UserInfo = ({ video, onFollow }) => {
+const UserInfo = ({ video, onFollow, darkMode }) => {
   const [expanded, setExpanded] = useState(false);
   const [isFollowing, setIsFollowing] = useState(video.user.isFollowing);
   const description = video.description;
@@ -60,12 +60,12 @@ const UserInfo = ({ video, onFollow }) => {
             </div>
             
             {/* Description - Option 5 style with expand/collapse */}
-            <p className="text-white/80 text-xs leading-relaxed mb-1">
+            <p className={`text-xs leading-relaxed mb-1 ${darkMode ? 'text-white/80' : 'text-white/80'}`}>
               {expanded ? description : truncatedDesc}
               {shouldTruncate && (
                 <button
                   onClick={handleExpandToggle}
-                  className="ml-1 text-gray-400 hover:text-white inline-flex items-center transition-colors"
+                  className={`ml-1 inline-flex items-center transition-colors ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-white'}`}
                 >
                   {expanded ? (
                     <ChevronUp size={12} />
@@ -80,12 +80,12 @@ const UserInfo = ({ video, onFollow }) => {
             <div className="flex items-center gap-2">
               {/* Animated visualizer bars */}
               <div className="flex items-center gap-0.5">
-                <div className="w-1 h-1 bg-pink-400 rounded-full animate-pulse"></div>
-                <div className="w-1 h-2 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-1 h-3 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                <div className={`w-1 h-1 rounded-full animate-pulse ${darkMode ? 'bg-pink-400' : 'bg-pink-400'}`}></div>
+                <div className={`w-1 h-2 rounded-full animate-pulse ${darkMode ? 'bg-pink-400' : 'bg-pink-400'}`} style={{ animationDelay: '0.2s' }}></div>
+                <div className={`w-1 h-3 rounded-full animate-pulse ${darkMode ? 'bg-pink-400' : 'bg-pink-400'}`} style={{ animationDelay: '0.4s' }}></div>
               </div>
               <Music size={12} className="text-pink-400" />
-              <span className="text-white/70 text-xs truncate flex-1">{video.music}</span>
+              <span className={`text-xs truncate flex-1 ${darkMode ? 'text-white/70' : 'text-white/70'}`}>{video.music}</span>
             </div>
           </div>
         </div>

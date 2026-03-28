@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 
-const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked }) => {
+const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMode }) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -318,7 +318,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked }) => {
       <video
         ref={videoRef}
         src={video.url}
-        className="w-full h-full object-cover"
+        className={`w-full h-full object-cover ${darkMode ? 'brightness-75' : 'brightness-100'}`}
         loop={false}
         muted={isMuted}
         playsInline
@@ -346,8 +346,8 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked }) => {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center">
             {/* Video Frame Skeleton */}
-            <div className="absolute inset-4 bg-gray-900/90 rounded-xl overflow-hidden backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black">
+            <div className={`absolute inset-4 ${darkMode ? 'bg-gray-900/90' : 'bg-gray-900/90'} rounded-xl overflow-hidden backdrop-blur-sm`}>
+              <div className={`absolute inset-0 ${darkMode ? 'bg-gradient-to-br from-gray-800 via-gray-900 to-black' : 'bg-gradient-to-br from-gray-800 via-gray-900 to-black'}`}>
                 {/* Enhanced Shimmer Effect */}
                 <div className="absolute inset-0 shimmer" 
                   style={{
@@ -360,21 +360,21 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked }) => {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative">
                     {/* Outer spinning ring */}
-                    <div className="w-16 h-16 border-3 border-gray-600/30 border-t-white/60 rounded-full animate-spin"></div>
+                    <div className={`w-16 h-16 border-3 ${darkMode ? 'border-gray-600/30 border-t-white/60' : 'border-gray-600/30 border-t-white/60'} rounded-full animate-spin`}></div>
                     
                     {/* Inner spinning ring (counter-rotation) */}
-                    <div className="absolute inset-2 w-12 h-12 border-2 border-gray-600/20 border-b-blue-500/60 rounded-full animate-spin" 
+                    <div className={`absolute inset-2 w-12 h-12 border-2 ${darkMode ? 'border-gray-600/20 border-b-blue-500/60' : 'border-gray-600/20 border-b-blue-500/60'} rounded-full animate-spin`} 
                       style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
                     
                     {/* Center dot */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white/80 rounded-full animate-pulse"></div>
+                      <div className={`w-2 h-2 ${darkMode ? 'bg-white/80' : 'bg-white/80'} rounded-full animate-pulse`}></div>
                     </div>
                   </div>
                 </div>
                 
                 {/* Loading Progress Bar */}
-                <div className="absolute bottom-0 left-0 right-0 h-2 bg-gray-800/80">
+                <div className={`absolute bottom-0 left-0 right-0 h-2 ${darkMode ? 'bg-gray-800/80' : 'bg-gray-800/80'}`}>
                   <div className="h-full w-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"
                     style={{
                       animation: 'loadingProgress 2s ease-in-out infinite'
@@ -383,15 +383,15 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked }) => {
                 </div>
                 
                 {/* Corner UI Elements */}
-                <div className="absolute top-3 left-3 w-10 h-10 bg-gray-700/40 rounded-lg animate-pulse"></div>
-                <div className="absolute top-3 right-3 w-10 h-10 bg-gray-700/40 rounded-lg animate-pulse"></div>
-                <div className="absolute bottom-6 left-3 w-20 h-3 bg-gray-700/40 rounded-full animate-pulse"></div>
+                <div className={`absolute top-3 left-3 w-10 h-10 ${darkMode ? 'bg-gray-700/40' : 'bg-gray-700/40'} rounded-lg animate-pulse`}></div>
+                <div className={`absolute top-3 right-3 w-10 h-10 ${darkMode ? 'bg-gray-700/40' : 'bg-gray-700/40'} rounded-lg animate-pulse`}></div>
+                <div className={`absolute bottom-6 left-3 w-20 h-3 ${darkMode ? 'bg-gray-700/40' : 'bg-gray-700/40'} rounded-full animate-pulse`}></div>
               </div>
             </div>
             
             {/* Loading Text */}
             <div className="absolute bottom-12 left-0 right-0 text-center">
-              <div className="text-white/50 text-sm font-medium animate-pulse">Buffering video...</div>
+              <div className={`text-sm font-medium animate-pulse ${darkMode ? 'text-white/50' : 'text-white/50'}`}>Buffering video...</div>
             </div>
           </div>
         </div>

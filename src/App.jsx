@@ -332,7 +332,7 @@ function App() {
   };
 
   return (
-    <div className="relative h-screen bg-black overflow-hidden">
+    <div className={`relative h-screen ${darkMode ? 'bg-black' : 'bg-black'} transition-colors duration-150`}>
       {/* Scroll Container */}
       <div
         ref={scrollContainerRef}
@@ -357,6 +357,7 @@ function App() {
               onPause={() => console.log(`Video ${video.id} paused`)}
               onLike={(liked) => handleLike(video.id, liked)}
               isLiked={likedStates[video.id] || false}
+              darkMode={darkMode}
             />
             
             {/* Settings Button - Only show on active video */}
@@ -381,6 +382,7 @@ function App() {
               onBookmark={(bookmarked) => handleBookmark(video.id, bookmarked)}
               isBookmarked={bookmarkStates[video.id] || false}
               isLiked={likedStates[video.id] || false}
+              darkMode={darkMode}
             />
             
             <UserInfo
@@ -392,11 +394,13 @@ function App() {
                 }
               }}
               onFollow={(following) => handleFollow(video.id, following)}
+              darkMode={darkMode}
             />
             
             <MusicDisc
               isPlaying={index === currentIndex}
               coverImage={video.musicCover}
+              darkMode={darkMode}
             />
           </div>
         ))}

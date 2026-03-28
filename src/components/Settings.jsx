@@ -14,7 +14,11 @@ const SettingsMenu = ({ isOpen, onClose, darkMode, onDarkModeToggle, position })
       
       {/* Settings Dropdown */}
       <div 
-        className="fixed z-50 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+        className={`fixed z-50 rounded-2xl shadow-2xl border overflow-hidden ${
+          darkMode 
+            ? 'bg-gray-950 border-gray-800' 
+            : 'bg-white border-gray-200'
+        }`}
         style={{
           top: position?.top || 80,
           left: position?.left || 20,
@@ -23,13 +27,21 @@ const SettingsMenu = ({ isOpen, onClose, darkMode, onDarkModeToggle, position })
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Settings</h2>
+        <div className={`flex items-center justify-between p-4 border-b ${
+          darkMode ? 'border-gray-800' : 'border-gray-200'
+        }`}>
+          <h2 className={`text-lg font-semibold ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}>Settings</h2>
           <button
+            className={`p-2 rounded-lg transition-colors ${
+              darkMode 
+                ? 'hover:bg-gray-800 text-gray-400' 
+                : 'hover:bg-gray-100 text-gray-600'
+            }`}
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            <X size={20} className="text-gray-600 dark:text-gray-400" />
+            <X size={20} />
           </button>
         </div>
         
@@ -38,16 +50,22 @@ const SettingsMenu = ({ isOpen, onClose, darkMode, onDarkModeToggle, position })
           {/* Dark Mode Toggle */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
+              <div className={`p-2 rounded-lg ${
+                darkMode ? 'bg-gray-800' : 'bg-gray-100'
+              }`}>
                 {darkMode ? (
-                  <Moon size={18} className="text-blue-600 dark:text-blue-400" />
+                  <Moon size={18} className="text-blue-400" />
                 ) : (
                   <Sun size={18} className="text-yellow-600" />
                 )}
               </div>
               <div>
-                <h3 className="font-medium text-gray-900 dark:text-white">Dark Mode</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Toggle dark theme</p>
+                <h3 className={`font-medium ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>Dark Mode</h3>
+                <p className={`text-sm ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>Toggle dark theme</p>
               </div>
             </div>
             
@@ -67,8 +85,12 @@ const SettingsMenu = ({ isOpen, onClose, darkMode, onDarkModeToggle, position })
           </div>
           
           {/* Additional Settings (Placeholder for future features) */}
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+          <div className={`pt-4 border-t ${
+            darkMode ? 'border-gray-800' : 'border-gray-200'
+          }`}>
+            <p className={`text-sm text-center ${
+              darkMode ? 'text-gray-500' : 'text-gray-500'
+            }`}>
               More settings coming soon...
             </p>
           </div>

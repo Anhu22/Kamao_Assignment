@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 
-const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isBookmarked: initialBookmarked, isLiked: initialLiked }) => {
+const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isBookmarked: initialBookmarked, isLiked: initialLiked, darkMode }) => {
   const [liked, setLiked] = useState(initialLiked || false);
   const [bookmarked, setBookmarked] = useState(initialBookmarked || false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
@@ -46,14 +46,14 @@ const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isB
       <div className="relative flex flex-col items-center">
         <button
           onClick={handleLike}
-          className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
+          className={`${darkMode ? 'bg-black/70 hover:bg-black/80' : 'bg-black/50 hover:bg-black/60'} backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform`}
         >
           <Heart
             size={28}
             className={`transition-all ${liked ? 'fill-red-500 text-red-500' : 'text-white'}`}
           />
         </button>
-        <span className="text-white text-xs mt-1 font-medium">{video.likes.toLocaleString()}</span>
+        <span className={`text-xs mt-1 font-medium ${darkMode ? 'text-white' : 'text-white'}`}>{video.likes.toLocaleString()}</span>
         
         {/* Heart Animation */}
         {showHeartAnimation && (
@@ -67,28 +67,28 @@ const ActionBar = ({ video, videoId, onLike, onComment, onShare, onBookmark, isB
       <div className="flex flex-col items-center">
         <button
           onClick={handleComment}
-          className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
+          className={`${darkMode ? 'bg-black/70 hover:bg-black/80' : 'bg-black/50 hover:bg-black/60'} backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform`}
         >
           <MessageCircle size={28} className="text-white" />
         </button>
-        <span className="text-white text-xs mt-1 font-medium">{video.comments.toLocaleString()}</span>
+        <span className={`text-xs mt-1 font-medium ${darkMode ? 'text-white' : 'text-white'}`}>{video.comments.toLocaleString()}</span>
       </div>
 
       {/* Share Button */}
       <div className="flex flex-col items-center">
         <button
           onClick={handleShare}
-          className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
+          className={`${darkMode ? 'bg-black/70 hover:bg-black/80' : 'bg-black/50 hover:bg-black/60'} backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform`}
         >
           <Share2 size={28} className="text-white" />
         </button>
-        <span className="text-white text-xs mt-1 font-medium">{video.shares.toLocaleString()}</span>
+        <span className={`text-xs mt-1 font-medium ${darkMode ? 'text-white' : 'text-white'}`}>{video.shares.toLocaleString()}</span>
       </div>
 
       {/* Bookmark Button */}
       <button
         onClick={handleBookmark}
-        className="bg-black/50 backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform"
+        className={`${darkMode ? 'bg-black/70 hover:bg-black/80' : 'bg-black/50 hover:bg-black/60'} backdrop-blur-sm p-3 rounded-full hover:scale-110 transition-transform`}
       >
         <Bookmark
           size={28}
