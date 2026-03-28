@@ -20,7 +20,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
   const longPressTimer = useRef(null);
   let overlayTimeout;
 
-  // Handle video activation/deactivation - RESTART FROM BEGINNING
+  // Handle video activation/deactivation - ALWAYS RESTART FROM BEGINNING
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -28,44 +28,38 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
     const playVideo = async () => {
       try {
         if (isActive) {
-          // Only reset video when it becomes active AND it's a new video session
-          if (!hasResetForThisSession && video.currentTime !== 0) {
-            video.currentTime = 0;
-            setProgress(0);
-            setHasResetForThisSession(true);
-          }
+          // Always restart from beginning when video becomes active
+          video.currentTime = 0;
+          setProgress(0);
+          setHasResetForThisSession(true);
           
           setIsLoading(true);
           
           if (video.readyState >= 2) {
             await video.play();
             setIsPlaying(true);
-            onPlay?.();
+            setIsLoading(false);
           } else {
-            const canPlayHandler = async () => {
-              try {
-                await video.play();
-                setIsPlaying(true);
-                onPlay?.();
-              } catch (error) {
-                console.log('Autoplay failed:', error);
-                setIsPlaying(false);
-              }
-              video.removeEventListener('canplay', canPlayHandler);
-            };
-            video.addEventListener('canplay', canPlayHandler);
+            // Wait for video to load
+            video.addEventListener('canplay', () => {
+              video.play();
+              setIsPlaying(true);
+              setIsLoading(false);
+            }, { once: true });
           }
         } else {
-          // When video becomes inactive, pause
+          // Pause when not active
           if (!video.paused) {
             video.pause();
             setIsPlaying(false);
-            onPause?.();
           }
+          // Reset session flag when video becomes inactive
+          setHasResetForThisSession(false);
         }
       } catch (error) {
         console.log('Playback error:', error);
         setIsPlaying(false);
+        setIsLoading(false);
       }
     };
 
@@ -76,12 +70,7 @@ const VideoPlayer = ({ video, isActive, onPlay, onPause, onLike, isLiked, darkMo
         video.pause();
       }
     };
-  }, [isActive, onPlay, onPause, hasResetForThisSession]);
-
-  // Reset the reset flag when video ID changes (new video)
-  useEffect(() => {
-    setHasResetForThisSession(false);
-  }, [video.id]);
+  }, [isActive, video.id]); // Add video.id to trigger when video changes
 
   // FIXED: Show overlay for exactly 1 second, then hide
   const showOverlayTemporarily = () => {
